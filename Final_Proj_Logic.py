@@ -3,10 +3,10 @@ import os
 import numpy as np
 import robosuite.utils.transform_utils as tfutil
 import copy
+import time
 
 
-
-def inverseKinematics(DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
+def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
     # These two OPTIONAL helper functions will actually set the angles and get you the gripper endeffector pose and jacobian.    
     #  "getGripperEEFPose" is actually moving the robot in the simulation but it does not render it. This works as a forward kinematics function. If you want to see the new robot pose, add: env.render()
     # "getJacobian(env)" returns the Jacobian computed for the gripper end-effector which is different from what you get in HW3. 
@@ -19,7 +19,9 @@ def inverseKinematics(DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.
 
     # Tuple of position and orientation (quat) of the base frame expressed in world frame
     robotBasePose = (env.robots[0].base_pos, env.robots[0].base_ori) 
+    # if RunNum == 0:
     initialJointAngles= env.robots[0]._joint_positions
+     
     jointAngles = initialJointAngles.copy()
     
     #============= Your code here =============
@@ -31,19 +33,6 @@ def inverseKinematics(DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.
 
     NumSteps = 100
     StepCount = 0
-    # 1) Get pose error
-    #      calc position error 
-    #      calc rotation error
-    #      put together and send off
-    #
-    # 2) if norm(error) < desired error we win
-    #
-    # 3) get jacobian
-    #
-    # 4) dTheta = dot(pinv(jacob),error)
-    #
-    # 5) update angles
-
     Jacobian_Calc = getJacobian(env)
     Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
 # -------------------------------------------------------------------------
@@ -62,14 +51,16 @@ def inverseKinematics(DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.
 
         dTheta = np.matmul(Jacobian_Inv,PoseError)
 
-        jointAngles += dTheta
+        jointAngles += dTheta/10
+        time.sleep(.005)
+        
         getGripperEEFPose(env,jointAngles) # Brings the robot to the initial joint angle.
         env.render()
         StepCount += 1
 
   
     #==========================================
-    getGripperEEFPose(env, initialJointAngles) # Brings the robot to the initial joint angle.
+    #getGripperEEFPose(env, initialJointAngles) # Brings the robot to the initial joint angle.
     env.render()
     return jointAngles
 
