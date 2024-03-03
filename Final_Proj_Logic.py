@@ -51,7 +51,7 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
 
         dTheta = np.matmul(Jacobian_Inv,PoseError)
 
-        jointAngles += dTheta/10
+        jointAngles += dTheta/10                       
         time.sleep(.005)
         
         getGripperEEFPose(env,jointAngles) # Brings the robot to the initial joint angle.

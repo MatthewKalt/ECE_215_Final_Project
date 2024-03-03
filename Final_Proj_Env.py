@@ -19,6 +19,8 @@ def GetObjects(env = any):
     ItemList = ['cube_main']#,"VisualBread","Milk","VisualMilk","Can","VisualCan","Cereal","VisualCereal"]
     for i in range(len(ItemList)):
         print(type(env.robots[0]))
+     
+
         ItemString = ItemList[i]
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.quat_multiply(ItemQuat, tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
@@ -26,18 +28,17 @@ def GetObjects(env = any):
 
         jointAngles = inverseKinematics(i,DesiredPose_in_U=DesiredPose, env=env)
         Your_gripper_EEF_pose = getGripperEEFPose(env, jointAngles)
-        print(help(env.robots[0].control))
         # print(env.robots[0].gripper_type)
         # print(env.robots[0].has_gripper)
         # print(env.robots[0].gripper.format_action([1]))
         # env.robots[0].grip_action(env.robots[0].gripper,[1])
-
-        # for i in range(100):
-        #     env.render()
-        #     #print(env.robots[0].gripper.format_action([1]))
-
-        #     time.sleep(.1)
         
+    for i in range(1000):
+            print((env.robots[0].dof))
+            action = [.1,0,0,0,0,0,0,1] # sample random action
+            obs, reward, done, info = env.step(action)  # take action in the environment
+            env.render()  # render on display]
+ 
      
 
 if __name__ == "__main__":
@@ -58,7 +59,7 @@ if __name__ == "__main__":
         has_renderer=True,  # make sure we can render to the screen
         has_offscreen_renderer=False,  # not needed since not using pixel obs
         use_camera_obs=False,  # do not use pixel observations
-        control_freq= .1 , # control should happen fast enough so that simulation looks smoother
+        control_freq= 10 , # control should happen fast enough so that simulation looks smoother
         camera_names="frontview",
         
     )
