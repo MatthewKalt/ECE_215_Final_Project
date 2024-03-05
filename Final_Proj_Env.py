@@ -27,14 +27,8 @@ def GetObjects(env = any):
 
     for i in range(len(ItemList)):
            
-        # for j in range(50):
-        #             print((env.robots[0].dof))
-        #             action = [0,0,0,0,0,0,0,-1] # sample random action
-        #             obs, reward, done, info = env.step(action)  # take action in the environment
-        #             env.render()  # render on display]
-
         ItemString = ItemList[i]
-        print(env.sim.data.get_body_xquat(ItemString))
+        #print(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.quat_multiply(ItemQuat,[0,1,0,0])# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
         DesiredPose = (env.sim.data.get_body_xpos(ItemString),ItemQuat) 
@@ -43,13 +37,14 @@ def GetObjects(env = any):
         Your_gripper_EEF_pose = getGripperEEFPose(env, jointAngles)
         
         for j in range(50):
-                    print((env.robots[0].dof))
+                   # print((env.robots[0].dof))
                     action = [0,0,0,0,0,0,0,.020833] # sample random action
                     obs, reward, done, info = env.step(action)  # take action in the environment
                     env.render()  # render on display]
 
         LiftPos, LiftQuat = MoveUp(env,ItemString)
-        print(tfutil.axisangle2quat([0.,np.pi,0.0]))
+       # print(tfutil.axisangle2quat([0.,np.pi,0.0]))
+
         LiftQuat = [-0.0, -0.707,  -.707, -0.0000]
 
         DesiredPose = (LiftPos,LiftQuat) 
@@ -79,7 +74,7 @@ if __name__ == "__main__":
         has_renderer=True,  # make sure we can render to the screen
         has_offscreen_renderer=False,  # not needed since not using pixel obs
         use_camera_obs=False,  # do not use pixel observations
-        control_freq= 10 , # control should happen fast enough so that simulation looks smoother
+        control_freq= 25 , # control should happen fast enough so that simulation looks smoother
         camera_names="frontview",
         
     )

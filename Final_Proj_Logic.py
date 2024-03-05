@@ -4,20 +4,11 @@ import numpy as np
 import robosuite.utils.transform_utils as tfutil
 import copy
 import time
+import matplotlib.pyplot as plt
 
 
 def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
-    # These two OPTIONAL helper functions will actually set the angles and get you the gripper endeffector pose and jacobian.    
-    #  "getGripperEEFPose" is actually moving the robot in the simulation but it does not render it. This works as a forward kinematics function. If you want to see the new robot pose, add: env.render()
-    # "getJacobian(env)" returns the Jacobian computed for the gripper end-effector which is different from what you get in HW3. 
 
-    #getGripperEEFPose(env, setJointAngles)
-    #getJacobian(env)
-
-    # We will bring the robot back to original pose at the end of "inverseKinematics" function, because it is inteded to compute the joint angles, not execute the joint angles.
-    # But it is not required for you to implement it.
-
-    # Tuple of position and orientation (quat) of the base frame expressed in world frame
     robotBasePose = (env.robots[0].base_pos, env.robots[0].base_ori) 
     # if RunNum == 0:
     initialJointAngles= env.robots[0]._joint_positions
@@ -27,11 +18,14 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     #============= Your code here =============
     Desired_Pos = DesiredPose_in_U[0]
     Desired_Quat = DesiredPose_in_U[1]
-    Desired_Error = .001
+    Desired_Error = .01
     EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
     EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
 
-    NumSteps = 100
+    fullcurrent=np.array([])
+    fulldesired=np.array([])
+
+    NumSteps = 1000
     StepCount = 0
     Jacobian_Calc = getJacobian(env)
     Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
@@ -40,45 +34,48 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     while StepCount < NumSteps:
         EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
         EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
-        #Calculate and store error in position :: abs(desired-actual)
-        print("Desired Quat %s"%Desired_Quat)
-        print("EEF Pos %s" %EEF_Quat)
+     
         PoseError = CalcPoseError(Desired_Quat,Desired_Pos,EEF_Quat,EEF_Pos)
-
+        
         if np.linalg.norm(PoseError) < Desired_Error:
             break
 
+        fullcurrent=np.append(fullcurrent,EEF_Pos)
+        fulldesired=np.append(fullcurrent,Desired_Pos)
+ 
         Jacobian_Calc = getJacobian(env)
         Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
 
         dTheta = np.matmul(Jacobian_Inv,PoseError)
 
-        #jointAngles += dTheta/10                   
         time.sleep(.01)
-        print(type(dTheta))
-        #getGripperEEFPose(env,jointAngles) # Brings the robot to the initial joint angle.
+       
         if RunNum == 1:
-            action = [0,1,0,0,0,0,0,.020833] # sample random action
+            NewdTheta=dTheta
+            NewdTheta = np.append(NewdTheta,0.020833)
+            action = NewdTheta
             obs, reward, done, info = env.step(action)  # take action in the environment
-            #getGripperEEFPose(env,jointAngles) # Brings the robot to the initial joint angle.
-
-           # jointAngles += dTheta/100  
+           
         else:
-            print(dTheta)
-            NewdTheta = np.append(dTheta,-1)
-            print(NewdTheta)
-            action = -NewdTheta# sample random action
+            NewdTheta=dTheta
+            NewdTheta = np.append(NewdTheta,-1)
+            action = NewdTheta# sample random action
             obs, reward, done, info = env.step(action)  # take action in the environment
-            #getGripperEEFPose(env,jointAngles) # Brings the robot to the initial joint angle.
-           # jointAngles += dTheta/10   
+          
         env.render()
         StepCount += 1
+
 
   
     #==========================================
     #getGripperEEFPose(env, initialJointAngles) # Brings the robot to the initial joint angle.
     env.render()
-    return jointAngles
+    DataLength = len(fullcurrent)
+    print(np.shape(fullcurrent))
+    plt.plot(DataLength, fullcurrent)
+    plt.plot(DataLength, fulldesired)
+    plt.show()
+    return jointAngles 
 
 
 def CalcPoseError(DesiredQuat,DesiredPos,ActualQuat,ActualPos):
@@ -97,7 +94,7 @@ def CalcPoseError(DesiredQuat,DesiredPos,ActualQuat,ActualPos):
 def getGripperEEFPose(env, setJointAngles): # This function works as a forward Kinematics
    
    
-    env.robots[0].set_robot_joint_positions(setJointAngles)
+    # env.robots[0].set_robot_joint_positions(setJointAngles)
     gripper_EEF_pose = (env.robots[0].sim.data.get_body_xpos('gripper0_eef'), tfutil.convert_quat(env.robots[0].sim.data.get_body_xquat('gripper0_eef')))     
     return gripper_EEF_pose # Outputs the position and quaternion (x,y,z,w) of the EEF pose in Universial Frame{0}.
     
