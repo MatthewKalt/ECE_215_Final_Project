@@ -11,33 +11,53 @@ import robosuite.utils.transform_utils as tfutil
 
 from Final_Proj_Logic import *
 
-
-
+def MoveUp(env, ItemString):
+        BodyMat = env.sim.data.get_body_xmat(ItemString)
+        BodyPos = env.sim.data.get_body_xpos(ItemString)
+        MoveMat = np.zeros([4,4])
+        LiftPos = BodyPos + [0.,0.3,0.4]
+        MoveMat[:3,:3] = BodyMat
+        MoveMat[:3,3] = LiftPos 
+        
+        return LiftPos, tfutil.mat2quat(MoveMat)
 
 def GetObjects(env = any):
        
     ItemList = ['cube_main']#,"VisualBread","Milk","VisualMilk","Can","VisualCan","Cereal","VisualCereal"]
+
     for i in range(len(ItemList)):
-        print(type(env.robots[0]))
-     
+           
+        # for j in range(50):
+        #             print((env.robots[0].dof))
+        #             action = [0,0,0,0,0,0,0,-1] # sample random action
+        #             obs, reward, done, info = env.step(action)  # take action in the environment
+        #             env.render()  # render on display]
 
         ItemString = ItemList[i]
+        print(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
-        ItemQuat = tfutil.quat_multiply(ItemQuat, tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
+        ItemQuat = tfutil.quat_multiply(ItemQuat,[0,1,0,0])# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
         DesiredPose = (env.sim.data.get_body_xpos(ItemString),ItemQuat) 
 
-        jointAngles = inverseKinematics(i,DesiredPose_in_U=DesiredPose, env=env)
+        jointAngles = inverseKinematics(0,DesiredPose_in_U=DesiredPose, env=env)
         Your_gripper_EEF_pose = getGripperEEFPose(env, jointAngles)
-        # print(env.robots[0].gripper_type)
-        # print(env.robots[0].has_gripper)
-        # print(env.robots[0].gripper.format_action([1]))
-        # env.robots[0].grip_action(env.robots[0].gripper,[1])
         
-    for i in range(1000):
-            print((env.robots[0].dof))
-            action = [.1,0,0,0,0,0,0,1] # sample random action
-            obs, reward, done, info = env.step(action)  # take action in the environment
-            env.render()  # render on display]
+        for j in range(50):
+                    print((env.robots[0].dof))
+                    action = [0,0,0,0,0,0,0,.020833] # sample random action
+                    obs, reward, done, info = env.step(action)  # take action in the environment
+                    env.render()  # render on display]
+
+        LiftPos, LiftQuat = MoveUp(env,ItemString)
+        print(tfutil.axisangle2quat([0.,np.pi,0.0]))
+        LiftQuat = [-0.0, -0.707,  -.707, -0.0000]
+
+        DesiredPose = (LiftPos,LiftQuat) 
+
+        jointAngles = inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+        Your_gripper_EEF_pose = getGripperEEFPose(env, jointAngles)
+
+    
  
      
 
