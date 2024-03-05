@@ -22,8 +22,8 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
     EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
 
-    fullcurrent=np.array([])
-    fulldesired=np.array([])
+    fullcurrent=np.array([[0,0,0]])
+    fulldesired=np.array([[0,0,0]])
 
     NumSteps = 1000
     StepCount = 0
@@ -39,16 +39,17 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
         
         if np.linalg.norm(PoseError) < Desired_Error:
             break
-
-        fullcurrent=np.append(fullcurrent,EEF_Pos)
-        fulldesired=np.append(fullcurrent,Desired_Pos)
+        
+        print(np.shape(fullcurrent))
+        fullcurrent=np.append(fullcurrent,np.array([EEF_Pos]),axis=0)
+        fulldesired=np.append(fulldesired,np.array([Desired_Pos]),axis=0)
  
         Jacobian_Calc = getJacobian(env)
         Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
 
         dTheta = np.matmul(Jacobian_Inv,PoseError)
 
-        time.sleep(.01)
+        #time.sleep(.01)
        
         if RunNum == 1:
             NewdTheta=dTheta
@@ -70,11 +71,12 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     #==========================================
     #getGripperEEFPose(env, initialJointAngles) # Brings the robot to the initial joint angle.
     env.render()
-    DataLength = len(fullcurrent)
-    print(np.shape(fullcurrent))
-    plt.plot(DataLength, fullcurrent)
-    plt.plot(DataLength, fulldesired)
-    plt.show()
+    # DataLength = len(fullcurrent)
+    # print(np.shape(fullcurrent))
+    # print(fullcurrent)
+    # plt.plot(range(DataLength), fullcurrent[:,0])
+    # plt.plot(range(DataLength), fulldesired[:,0])
+    # plt.show()
     return jointAngles 
 
 

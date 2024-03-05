@@ -8,6 +8,7 @@ import time
 import robosuite as suite
 from robosuite import ALL_GRIPPERS
 import robosuite.utils.transform_utils as tfutil
+import matplotlib.pyplot as plt
 
 from Final_Proj_Logic import *
 
@@ -24,7 +25,8 @@ def MoveUp(env, ItemString):
 def GetObjects(env = any):
        
     ItemList = ['cube_main']#,"VisualBread","Milk","VisualMilk","Can","VisualCan","Cereal","VisualCereal"]
-
+    plt.plot([1, 2], [1, 2])
+    plt.show()
     for i in range(len(ItemList)):
            
         ItemString = ItemList[i]
