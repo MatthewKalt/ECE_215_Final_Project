@@ -4,7 +4,6 @@ import numpy as np
 import robosuite.utils.transform_utils as tfutil
 import copy
 import time
-import matplotlib.pyplot as plt
 
 
 def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
@@ -18,12 +17,14 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     #============= Your code here =============
     Desired_Pos = DesiredPose_in_U[0]
     Desired_Quat = DesiredPose_in_U[1]
-    Desired_Error = .01
+    Desired_Error = .03
     EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
     EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
 
     fullcurrent=np.array([[0,0,0]])
     fulldesired=np.array([[0,0,0]])
+    PoseErrorCumSum=np.zeros(6)
+    dThetaprev=np.zeros(7)
 
     NumSteps = 1000
     StepCount = 0
@@ -31,16 +32,23 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
 # -------------------------------------------------------------------------
     #iterate until position is reached
+
     while StepCount < NumSteps:
+        
         EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
         EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
      
         PoseError = CalcPoseError(Desired_Quat,Desired_Pos,EEF_Quat,EEF_Pos)
         
+        
+        
+        PoseErrorCumSum+=PoseError
+        
+        print(np.linalg.norm(PoseError))
         if np.linalg.norm(PoseError) < Desired_Error:
             break
         
-        print(np.shape(fullcurrent))
+        
         fullcurrent=np.append(fullcurrent,np.array([EEF_Pos]),axis=0)
         fulldesired=np.append(fulldesired,np.array([Desired_Pos]),axis=0)
  
@@ -48,36 +56,56 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
         Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
 
         dTheta = np.matmul(Jacobian_Inv,PoseError)
+        dThetaCumSum = np.matmul(Jacobian_Inv, PoseErrorCumSum)
+        
 
         #time.sleep(.01)
-       
+        boost=np.array([1,1,1,1,1,1,10,1])
         if RunNum == 1:
-            NewdTheta=dTheta
+            fname="toshelf"
+            Kp=0.5
+            Ki=0
+            Kd=0
+            Pterm=dTheta*Kp
+            Iterm=dThetaCumSum*Ki
+            Dterm=(dThetaprev-dTheta)*Kd
+            NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,0.020833)
+            NewdTheta = NewdTheta*boost
             action = NewdTheta
+            
             obs, reward, done, info = env.step(action)  # take action in the environment
            
         else:
-            NewdTheta=dTheta
+            fname="tocube"
+            Kp=0.5
+            Ki=0
+            Kd=0
+            Pterm=dTheta*Kp
+            Iterm=dThetaCumSum*Ki
+            Dterm=(dThetaprev-dTheta)*Kd
+            NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,-1)
+            NewdTheta=NewdTheta*boost
             action = NewdTheta# sample random action
             obs, reward, done, info = env.step(action)  # take action in the environment
-          
+
+        
         env.render()
         StepCount += 1
-
+        dThetaprev=dTheta
 
   
     #==========================================
     #getGripperEEFPose(env, initialJointAngles) # Brings the robot to the initial joint angle.
     env.render()
-    # DataLength = len(fullcurrent)
-    # print(np.shape(fullcurrent))
-    # print(fullcurrent)
-    # plt.plot(range(DataLength), fullcurrent[:,0])
-    # plt.plot(range(DataLength), fulldesired[:,0])
-    # plt.show()
-    return jointAngles 
+    
+    print("SUCCESS")
+    
+    np.savetxt(fname+"current.txt",fullcurrent)
+    np.savetxt(fname+"desired.txt",fulldesired)
+
+    return jointAngles
 
 
 def CalcPoseError(DesiredQuat,DesiredPos,ActualQuat,ActualPos):
