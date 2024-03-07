@@ -23,6 +23,7 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
 
     fullcurrent=np.array([[0,0,0]])
     fulldesired=np.array([[0,0,0]])
+    fulltime = np.array([0])
     PoseErrorCumSum=np.zeros(6)
     dThetaprev=np.zeros(7)
 
@@ -46,14 +47,13 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
         
         PoseErrorCumSum+=PoseError
         
-        #print(np.linalg.norm(PoseError))
         if np.linalg.norm(PoseError) < Desired_Error:
             break
         
         
         fullcurrent=np.append(fullcurrent,np.array([EEF_Pos]),axis=0)
         fulldesired=np.append(fulldesired,np.array([Desired_Pos]),axis=0)
- 
+    
         Jacobian_Calc = getJacobian(env)
         Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
 
@@ -62,12 +62,9 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
         dThetaCumSum += dTheta
 
        
-        
-        
-
         #time.sleep(.01)
         boost=np.array([1,1,1,1,1,1,10,1])
-        if RunNum == 1:
+        if RunNum >= 1:
             fname="toshelf"
             # Kp=.4
             # Ki=0.0

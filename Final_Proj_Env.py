@@ -15,7 +15,29 @@ def MoveUp(env, ItemString):
         BodyMat = env.sim.data.get_body_xmat(ItemString)
         BodyPos = env.sim.data.get_body_xpos(ItemString)
         MoveMat = np.zeros([4,4])
-        LiftPos = BodyPos + [0.,0.3,0.4]
+        LiftPos = BodyPos + [0.,.0,0.4]
+        MoveMat[:3,:3] = BodyMat
+        MoveMat[:3,3] = LiftPos 
+        
+        return LiftPos, tfutil.mat2quat(MoveMat)
+
+# def GuideArm():
+      
+def Moveright(env, ItemString):
+        BodyMat = env.sim.data.get_body_xmat(ItemString)
+        BodyPos = env.sim.data.get_body_xpos(ItemString)
+        MoveMat = np.zeros([4,4])
+        LiftPos = BodyPos + [0.,0.3,0.]
+        MoveMat[:3,:3] = BodyMat
+        MoveMat[:3,3] = LiftPos 
+        
+        return LiftPos, tfutil.mat2quat(MoveMat)
+
+def Turnright(env, ItemString):
+        BodyMat = env.sim.data.get_body_xmat(ItemString)
+        BodyPos = env.sim.data.get_body_xpos(ItemString)
+        MoveMat = np.zeros([4,4])
+        LiftPos = BodyPos + [0.,0.0,0.]
         MoveMat[:3,:3] = BodyMat
         MoveMat[:3,3] = LiftPos 
         
@@ -23,13 +45,13 @@ def MoveUp(env, ItemString):
 
 def GetObjects(env = any):
        
-    ItemList = ['cube_main']#,"VisualBread","Milk","VisualMilk","Can","VisualCan","Cereal","VisualCereal"]
+    ItemList = ['cube_main']
     for i in range(len(ItemList)):
            
         ItemString = ItemList[i]
         #print(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
-        ItemQuat = tfutil.quat_multiply(ItemQuat,[0,1,0,0])# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
+        ItemQuat = tfutil.quat_multiply(ItemQuat,tfutil.axisangle2quat([0.,np.pi,0.0]))# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
         DesiredPose = (env.sim.data.get_body_xpos(ItemString),ItemQuat) 
 
         jointAngles = inverseKinematics(0,DesiredPose_in_U=DesiredPose, env=env)
@@ -42,16 +64,31 @@ def GetObjects(env = any):
                     env.render()  # render on display]
 
         LiftPos, LiftQuat = MoveUp(env,ItemString)
-       # print(tfutil.axisangle2quat([0.,np.pi,0.0]))
 
-        LiftQuat = [-0.0, -0.707,  -.707, -0.0000]
+        LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString)),tfutil.axisangle2quat([0.,np.pi,0.0]))
+
+        DesiredPose = (LiftPos,LiftQuat) 
+
+        
+
+        jointAngles = inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+
+        LiftPos, LiftQuat = Moveright(env,ItemString)
+
+        LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString)),tfutil.axisangle2quat([0.,np.pi,0.0]))
 
         DesiredPose = (LiftPos,LiftQuat) 
 
         jointAngles = inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
-        #Your_gripper_EEF_pose = getGripperEEFPose(env, jointAngles)
 
-    
+        LiftPos, LiftQuat = Turnright(env,ItemString)
+
+        LiftQuat = [0.0,-0.707,-0.707,0.0]
+
+        DesiredPose = (LiftPos,LiftQuat) 
+
+        jointAngles = inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+      
  
      
 
