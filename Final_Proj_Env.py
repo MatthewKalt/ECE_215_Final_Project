@@ -15,7 +15,7 @@ def MoveUp(env, ItemString):
         BodyMat = env.sim.data.get_body_xmat(ItemString)
         BodyPos = env.sim.data.get_body_xpos(ItemString)
         MoveMat = np.zeros([4,4])
-        LiftPos = BodyPos + [0.,0.1,0.4]
+        LiftPos = BodyPos + [0.,0.3,0.4]
         MoveMat[:3,:3] = BodyMat
         MoveMat[:3,3] = LiftPos 
         
