@@ -17,7 +17,7 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     #============= Your code here =============
     Desired_Pos = DesiredPose_in_U[0]
     Desired_Quat = DesiredPose_in_U[1]
-    Desired_Error = .03
+    Desired_Error = .025
     EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
     EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
 
@@ -26,15 +26,17 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     PoseErrorCumSum=np.zeros(6)
     dThetaprev=np.zeros(7)
 
-    NumSteps = 1000
+    NumSteps = 1500
     StepCount = 0
     Jacobian_Calc = getJacobian(env)
     Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
 # -------------------------------------------------------------------------
     #iterate until position is reached
-
+    Time = time.time()
+    TimePrev=Time
+    Iterm = 0
     while StepCount < NumSteps:
-        
+        Time =time.time()
         EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
         EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
      
@@ -44,7 +46,7 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
         
         PoseErrorCumSum+=PoseError
         
-        print(np.linalg.norm(PoseError))
+        #print(np.linalg.norm(PoseError))
         if np.linalg.norm(PoseError) < Desired_Error:
             break
         
@@ -57,18 +59,26 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
 
         dTheta = np.matmul(Jacobian_Inv,PoseError)
         dThetaCumSum = np.matmul(Jacobian_Inv, PoseErrorCumSum)
+        dThetaCumSum += dTheta
+
+       
+        
         
 
         #time.sleep(.01)
         boost=np.array([1,1,1,1,1,1,10,1])
         if RunNum == 1:
             fname="toshelf"
-            Kp=0.5
-            Ki=0
-            Kd=0
+            # Kp=.4
+            # Ki=0.0
+            # Kd= 0.01
+            Kp= 2
+            Ki=0.0001
+            Kd= 2.5
             Pterm=dTheta*Kp
-            Iterm=dThetaCumSum*Ki
-            Dterm=(dThetaprev-dTheta)*Kd
+            #Iterm=dThetaCumSum*Ki
+            Iterm = Iterm + Ki*dTheta*(Time-TimePrev)
+            Dterm=(dTheta-dThetaprev)*Kd/(Time-TimePrev)
             NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,0.020833)
             NewdTheta = NewdTheta*boost
@@ -78,22 +88,23 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
            
         else:
             fname="tocube"
-            Kp=0.5
-            Ki=0
-            Kd=0
+            Kp= 2
+            Ki= 0.0001
+            Kd= 2.5
             Pterm=dTheta*Kp
             Iterm=dThetaCumSum*Ki
-            Dterm=(dThetaprev-dTheta)*Kd
+            Dterm=(dTheta-dThetaprev)*Kd/(Time-TimePrev)
             NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,-1)
             NewdTheta=NewdTheta*boost
             action = NewdTheta# sample random action
             obs, reward, done, info = env.step(action)  # take action in the environment
-
+            
         
         env.render()
         StepCount += 1
         dThetaprev=dTheta
+        TimePrev = Time
 
   
     #==========================================
@@ -106,6 +117,8 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     np.savetxt(fname+"desired.txt",fulldesired)
 
     return jointAngles
+
+
 
 
 def CalcPoseError(DesiredQuat,DesiredPos,ActualQuat,ActualPos):
