@@ -11,7 +11,7 @@ K_P = 2
 K_I = 0.0001
 K_D = 3
 
-def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
+def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
 
     robotBasePose = (env.robots[0].base_pos, env.robots[0].base_ori) 
     initialJointAngles= env.robots[0]._joint_positions
@@ -21,7 +21,7 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     #============= Your code here =============
     Desired_Pos = DesiredPose_in_U[0]
     Desired_Quat = DesiredPose_in_U[1]
-    Desired_Error = .025
+    Desired_Error = Sense
     EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
     EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
 
@@ -106,8 +106,8 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     
     print("SUCCESS")
     
-    np.savetxt(fname+"current.txt",fullcurrent)
-    np.savetxt(fname+"desired.txt",fulldesired)
+    # np.savetxt(fname+"current.txt",fullcurrent)
+    # np.savetxt(fname+"desired.txt",fulldesired)
 
     return jointAngles
 

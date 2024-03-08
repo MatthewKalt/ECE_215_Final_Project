@@ -7,6 +7,8 @@ import time
 
 import Final_Proj_Logic as FPL
 
+STEP_SIZE = 0.20
+ERROR = 0.1
 
 def CloseGripper(env):
     for j in range(20):
@@ -18,38 +20,51 @@ def MoveX(env,Item,Dist,Ori):
     BodyMat = env.sim.data.get_body_xmat(Item)
     BodyPos = env.sim.data.get_body_xpos(Item)
     MoveMat = np.zeros([4,4])
-    LiftPos = BodyPos + [Dist, 0.0, 0.0]
-    MoveMat[:3,:3] = BodyMat
-    MoveMat[:3,3] = LiftPos 
-    LiftQuat = tfutil.mat2quat(MoveMat)
-        
-    LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
-    DesiredPose = (LiftPos,LiftQuat) 
-    jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+    CurrGoal = 0.0
+
+    while CurrGoal <= Dist:
+        LiftPos = BodyPos + [CurrGoal,0.0,0.0]
+        MoveMat[:3,:3] = BodyMat
+        MoveMat[:3,3] = LiftPos 
+        LiftQuat = tfutil.mat2quat(MoveMat)
+        LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
+        DesiredPose = (LiftPos,LiftQuat) 
+
+        jointAngles = FPL.inverseKinematics(1,ERROR,DesiredPose_in_U=DesiredPose, env=env)
+        CurrGoal += STEP_SIZE
 
 def MoveY(env,Item,Dist,Ori):
     BodyMat = env.sim.data.get_body_xmat(Item)
     BodyPos = env.sim.data.get_body_xpos(Item)
     MoveMat = np.zeros([4,4])
-    LiftPos = BodyPos + [0.0,Dist,0.0]
-    MoveMat[:3,:3] = BodyMat
-    MoveMat[:3,3] = LiftPos 
-    LiftQuat = tfutil.mat2quat(MoveMat)
-        
-    LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
-    DesiredPose = (LiftPos,LiftQuat) 
-    jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+    CurrGoal = 0.0
+
+    while CurrGoal <= Dist:
+        LiftPos = BodyPos + [0.0,CurrGoal,0.0]
+        MoveMat[:3,:3] = BodyMat
+        MoveMat[:3,3] = LiftPos 
+        LiftQuat = tfutil.mat2quat(MoveMat)
+        LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
+        DesiredPose = (LiftPos,LiftQuat) 
+
+        jointAngles = FPL.inverseKinematics(1,ERROR,DesiredPose_in_U=DesiredPose, env=env)
+        CurrGoal += STEP_SIZE
+
 
 def MoveZ(env,Item,Dist,Ori):
  
     BodyMat = env.sim.data.get_body_xmat(Item)
     BodyPos = env.sim.data.get_body_xpos(Item)
     MoveMat = np.zeros([4,4])
-    LiftPos = BodyPos + [0.0,0.0,Dist]
-    MoveMat[:3,:3] = BodyMat
-    MoveMat[:3,3] = LiftPos 
-    LiftQuat = tfutil.mat2quat(MoveMat)
-        
-    LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
-    DesiredPose = (LiftPos,LiftQuat) 
-    jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+    CurrGoal = 0.0
+
+    while CurrGoal <= Dist:
+        LiftPos = BodyPos + [0.0,0.0,CurrGoal]
+        MoveMat[:3,:3] = BodyMat
+        MoveMat[:3,3] = LiftPos 
+        LiftQuat = tfutil.mat2quat(MoveMat)
+        LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
+        DesiredPose = (LiftPos,LiftQuat) 
+
+        jointAngles = FPL.inverseKinematics(1,ERROR,DesiredPose_in_U=DesiredPose, env=env)
+        CurrGoal += STEP_SIZE
