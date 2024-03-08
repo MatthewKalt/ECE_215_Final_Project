@@ -9,8 +9,8 @@ import robosuite as suite
 from robosuite import ALL_GRIPPERS
 import robosuite.utils.transform_utils as tfutil
 
-#from Final_Proj_Logic import * 
 import Final_Proj_Logic as FPL
+import Final_Proj_Movement as FPM
 
 def MoveUp(env, ItemString):
         BodyMat = env.sim.data.get_body_xmat(ItemString)
@@ -22,7 +22,6 @@ def MoveUp(env, ItemString):
         
         return LiftPos, tfutil.mat2quat(MoveMat)
 
-# def GuideArm():
       
 def Moveright(env, ItemString):
         BodyMat = env.sim.data.get_body_xmat(ItemString)
@@ -123,11 +122,6 @@ if __name__ == "__main__":
         # Reset the env
         env.reset()
 
- 
-        print('===============================================')
-        # print('Desired Pose', desiredPose)        
-        # print('Your inverse kinematics result ', Your_gripper_EEF_pose)
-        print('===============================================')    
         GetObjects(env)
         env.render()
 

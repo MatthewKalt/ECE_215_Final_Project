@@ -5,6 +5,7 @@ import robosuite.utils.transform_utils as tfutil
 import copy
 import time
 
+import Final_Proj_Movement as FPM
 
 K_P = 2
 K_I = 0.0001
@@ -34,8 +35,7 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
     StepCount = 0
     Jacobian_Calc = getJacobian(env)
     Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
-# -------------------------------------------------------------------------
-    #iterate until position is reached
+
     Time = time.time()
     TimePrev=Time
     Iterm = 0
@@ -140,33 +140,6 @@ def GetItemList(env,obs):
     
     return dict(sorted(ItemDict.items(), key=lambda item: item[1]))
 
-
-
-
-# This function should return the list of objects in the order that are closest to the robot endeffector
-def getTravelDistance(observation, visitOrder = ['Milk', 'Can', 'Cereal', 'Bread']):    
-    print("getObjectList_closestPosition First")
-    print(visitOrder)
-    travelDistance = 0.0
-    #====================== Your code Input here =============================================
-    # Write your code to change the travelDistance
-    # You may want to use tfutil.
-
-    for i in range(4):
-        if i == 0:
-            eef_pos = observation['robot0_eef_pos']
-            closest_item_pos = observation[visitOrder[0]+"_pos"]
-            dist1 = eef_pos - closest_item_pos
-            travelDistance += np.linalg.norm(dist1)
-        else:
-            closer_item_pos = observation[visitOrder[i-1]+"_pos"]
-            next_closest_item_pos = observation[visitOrder[i]+"_pos"]
-            relative_dist = closer_item_pos - next_closest_item_pos
-            travelDistance += np.linalg.norm(relative_dist)
-            
-    #============================================================================================
-   # print(travelDistance)
-    return travelDistance # This should be in meter by default
 
 
 def getGripperEEFPose(env, setJointAngles): # This function works as a forward K_Inematics
