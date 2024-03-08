@@ -43,8 +43,15 @@ def Turnright(env, ItemString):
         
         return LiftPos, tfutil.mat2quat(MoveMat)
 
+def GoToItemDest(Item):
+    BodyPos = env.sim.data.get_body_xpos(Item)
+   
+
+
+     
+      
 def GetObjects(env = any):
-       
+
     action = [0,0,0,0,0,0,0,0]
     obs, reward, done, info = env.step(action)  # take action in the environment
     ItemList = FPL.GetItemList(env,obs)
@@ -52,43 +59,34 @@ def GetObjects(env = any):
     for key,value in ItemList.items():
         
         ItemString = key
+
+       # GoToItem(ItemString)
+        
+#GOING TO ITEM FROM START========================================================
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.quat_multiply(ItemQuat,tfutil.axisangle2quat([0.,np.pi,0.0]))# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
         DesiredPose = (env.sim.data.get_body_xpos(ItemString),ItemQuat) 
-
         jointAngles = FPL.inverseKinematics(0,DesiredPose_in_U=DesiredPose, env=env)
         Your_gripper_EEF_pose = FPL.getGripperEEFPose(env, jointAngles)
         
-        for j in range(20):
-                   # print((env.robots[0].dof))
-                    action = [0,0,0,0,0,0,0,.020833] # sample random action
-                    obs, reward, done, info = env.step(action)  # take action in the environment
-                    env.render()  # render on display]
+        FPM.CloseGripper(env)
 
-        LiftPos, LiftQuat = MoveUp(env,ItemString)
-
-        LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString)),tfutil.axisangle2quat([0.,np.pi,0.0]))
-
-        DesiredPose = (LiftPos,LiftQuat) 
-
-        
-
-        jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+#MOVING UP ============================================================================================================================
+        # LiftPos, LiftQuat = MoveUp(env,ItemString)
+        # LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString)),tfutil.axisangle2quat([0.,np.pi,0.0]))
+        # DesiredPose = (LiftPos,LiftQuat) 
+        # jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+        DesiredOrientation = [0.,np.pi,0.0]
+        FPM.MoveZ(env,ItemString,0.4,DesiredOrientation)
 
         LiftPos, LiftQuat = Moveright(env,ItemString)
-
         LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString)),tfutil.axisangle2quat([0.,np.pi,0.0]))
-
         DesiredPose = (LiftPos,LiftQuat) 
-
         jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
 
         LiftPos, LiftQuat = Turnright(env,ItemString)
-
         LiftQuat = [0.0,-0.707,-0.707,0.0]
-
         DesiredPose = (LiftPos,LiftQuat) 
-
         jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
       
  
