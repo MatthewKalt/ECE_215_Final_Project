@@ -141,7 +141,7 @@ def GetItemList(env,obs):
     return dict(sorted(ItemDict.items(), key=lambda item: item[1]))
 
 
-        
+
 
 # This function should return the list of objects in the order that are closest to the robot endeffector
 def getTravelDistance(observation, visitOrder = ['Milk', 'Can', 'Cereal', 'Bread']):    

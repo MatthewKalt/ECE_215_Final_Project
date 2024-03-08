@@ -46,16 +46,13 @@ def Turnright(env, ItemString):
 
 def GetObjects(env = any):
        
-    ItemList = ['Bread_main']
     action = [0,0,0,0,0,0,0,0]
     obs, reward, done, info = env.step(action)  # take action in the environment
-    FPL.GetItemList(env,obs)
-    # for item in ItemList:
-    #        print(item)
+    ItemList = FPL.GetItemList(env,obs)
 
-    for i in range(len(ItemList)):
-        ItemString = ItemList[i]
-        #print(env.sim.data.get_body_xquat(ItemString))
+    for key,value in ItemList.items():
+        
+        ItemString = key
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.quat_multiply(ItemQuat,tfutil.axisangle2quat([0.,np.pi,0.0]))# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
         DesiredPose = (env.sim.data.get_body_xpos(ItemString),ItemQuat) 
