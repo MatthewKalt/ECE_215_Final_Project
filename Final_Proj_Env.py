@@ -9,7 +9,8 @@ import robosuite as suite
 from robosuite import ALL_GRIPPERS
 import robosuite.utils.transform_utils as tfutil
 
-from Final_Proj_Logic import *
+#from Final_Proj_Logic import * 
+import Final_Proj_Logic as FPL
 
 def MoveUp(env, ItemString):
         BodyMat = env.sim.data.get_body_xmat(ItemString)
@@ -45,17 +46,22 @@ def Turnright(env, ItemString):
 
 def GetObjects(env = any):
        
-    ItemList = ['cube_main']
+    ItemList = ['Bread_main']
+    action = [0,0,0,0,0,0,0,0]
+    obs, reward, done, info = env.step(action)  # take action in the environment
+    FPL.GetItemList(env,obs)
+    # for item in ItemList:
+    #        print(item)
+
     for i in range(len(ItemList)):
-           
         ItemString = ItemList[i]
         #print(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.quat_multiply(ItemQuat,tfutil.axisangle2quat([0.,np.pi,0.0]))# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
         DesiredPose = (env.sim.data.get_body_xpos(ItemString),ItemQuat) 
 
-        jointAngles = inverseKinematics(0,DesiredPose_in_U=DesiredPose, env=env)
-        Your_gripper_EEF_pose = getGripperEEFPose(env, jointAngles)
+        jointAngles = FPL.inverseKinematics(0,DesiredPose_in_U=DesiredPose, env=env)
+        Your_gripper_EEF_pose = FPL.getGripperEEFPose(env, jointAngles)
         
         for j in range(20):
                    # print((env.robots[0].dof))
@@ -71,7 +77,7 @@ def GetObjects(env = any):
 
         
 
-        jointAngles = inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+        jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
 
         LiftPos, LiftQuat = Moveright(env,ItemString)
 
@@ -79,7 +85,7 @@ def GetObjects(env = any):
 
         DesiredPose = (LiftPos,LiftQuat) 
 
-        jointAngles = inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+        jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
 
         LiftPos, LiftQuat = Turnright(env,ItemString)
 
@@ -87,7 +93,7 @@ def GetObjects(env = any):
 
         DesiredPose = (LiftPos,LiftQuat) 
 
-        jointAngles = inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
+        jointAngles = FPL.inverseKinematics(1,DesiredPose_in_U=DesiredPose, env=env)
       
  
      
@@ -103,7 +109,7 @@ if __name__ == "__main__":
 
     # create environment with selected grippers
     env = suite.make(
-        "Lift",
+        "PickPlace",
         robots="Panda",
         gripper_types=gripper,
         

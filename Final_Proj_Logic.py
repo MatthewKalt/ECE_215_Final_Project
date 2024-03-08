@@ -6,10 +6,13 @@ import copy
 import time
 
 
+K_P = 2
+K_I = 0.0001
+K_D = 3
+
 def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
 
     robotBasePose = (env.robots[0].base_pos, env.robots[0].base_ori) 
-    # if RunNum == 0:
     initialJointAngles= env.robots[0]._joint_positions
      
     jointAngles = initialJointAngles.copy()
@@ -62,20 +65,15 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
         dThetaCumSum += dTheta
 
        
-        #time.sleep(.01)
         boost=np.array([1,1,1,1,1,1,10,1])
         if RunNum >= 1:
             fname="toshelf"
-            # Kp=.4
-            # Ki=0.0
-            # Kd= 0.01
-            Kp= 2
-            Ki=0.0001
-            Kd= 3
-            Pterm=dTheta*Kp
-            #Iterm=dThetaCumSum*Ki
-            Iterm = Iterm + Ki*dTheta*(Time-TimePrev)
-            Dterm=(dTheta-dThetaprev)*Kd/(Time-TimePrev)
+            K_P= 2
+            K_I=0.0001
+            K_D= 3
+            Pterm=dTheta*K_P
+            Iterm = Iterm + K_I*dTheta*(Time-TimePrev)
+            Dterm=(dTheta-dThetaprev)*K_D/(Time-TimePrev)
             NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,0.020833)
             NewdTheta = NewdTheta*boost
@@ -85,12 +83,12 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
            
         else:
             fname="tocube"
-            Kp= 2
-            Ki= 0.0001
-            Kd= 3
-            Pterm=dTheta*Kp
-            Iterm=dThetaCumSum*Ki
-            Dterm=(dTheta-dThetaprev)*Kd/(Time-TimePrev)
+            K_P= 2
+            K_I= 0.0001
+            K_D= 3
+            Pterm=dTheta*K_P
+            Iterm=dThetaCumSum*K_I
+            Dterm=(dTheta-dThetaprev)*K_D/(Time-TimePrev)
             NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,-1)
             NewdTheta=NewdTheta*boost
@@ -104,8 +102,6 @@ def inverseKinematics(RunNum,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0.,
         TimePrev = Time
 
   
-    #==========================================
-    #getGripperEEFPose(env, initialJointAngles) # Brings the robot to the initial joint angle.
     env.render()
     
     print("SUCCESS")
@@ -131,10 +127,51 @@ def CalcPoseError(DesiredQuat,DesiredPos,ActualQuat,ActualPos):
 
 #=========== Not a HW problem below ==========
 
-def getGripperEEFPose(env, setJointAngles): # This function works as a forward Kinematics
+
+def GetItemList(env,obs):
+    Items = ['Milk_main','Cereal_main','Bread_main','Can_main']
+    eef_pos = obs['robot0_eef_pos']
+    DistNorm = np.zeros(4)
+    ItemDict = {}
+    for item in Items:
+        ItemPos = env.sim.data.get_body_xpos(item)
+        Dist = eef_pos - ItemPos    
+        ItemDict[item] = np.linalg.norm(Dist)
+    
+    return dict(sorted(ItemDict.items(), key=lambda item: item[1]))
+
+
+        
+
+# This function should return the list of objects in the order that are closest to the robot endeffector
+def getTravelDistance(observation, visitOrder = ['Milk', 'Can', 'Cereal', 'Bread']):    
+    print("getObjectList_closestPosition First")
+    print(visitOrder)
+    travelDistance = 0.0
+    #====================== Your code Input here =============================================
+    # Write your code to change the travelDistance
+    # You may want to use tfutil.
+
+    for i in range(4):
+        if i == 0:
+            eef_pos = observation['robot0_eef_pos']
+            closest_item_pos = observation[visitOrder[0]+"_pos"]
+            dist1 = eef_pos - closest_item_pos
+            travelDistance += np.linalg.norm(dist1)
+        else:
+            closer_item_pos = observation[visitOrder[i-1]+"_pos"]
+            next_closest_item_pos = observation[visitOrder[i]+"_pos"]
+            relative_dist = closer_item_pos - next_closest_item_pos
+            travelDistance += np.linalg.norm(relative_dist)
+            
+    #============================================================================================
+   # print(travelDistance)
+    return travelDistance # This should be in meter by default
+
+
+def getGripperEEFPose(env, setJointAngles): # This function works as a forward K_Inematics
    
    
-    # env.robots[0].set_robot_joint_positions(setJointAngles)
     gripper_EEF_pose = (env.robots[0].sim.data.get_body_xpos('gripper0_eef'), tfutil.convert_quat(env.robots[0].sim.data.get_body_xquat('gripper0_eef')))     
     return gripper_EEF_pose # Outputs the position and quaternion (x,y,z,w) of the EEF pose in Universial Frame{0}.
     
@@ -143,5 +180,6 @@ def getJacobian(env): # This function returns the jacobian of current configurat
     jacp = env.robots[0].sim.data.get_body_jacp('gripper0_eef').reshape((3, -1))[:,env.robots[0]._ref_joint_vel_indexes]
     jacr = env.robots[0].sim.data.get_body_jacr('gripper0_eef').reshape((3, -1))[:,env.robots[0]._ref_joint_vel_indexes]    
     jacobianMat_gripperEEF = np.concatenate((jacp, jacr),axis=0)
+
     return jacobianMat_gripperEEF #Outputs the Jacobian expressed in {0}
 
