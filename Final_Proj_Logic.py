@@ -31,7 +31,7 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
     PoseErrorCumSum=np.zeros(6)
     dThetaprev=np.zeros(7)
 
-    NumSteps = 1500
+    NumSteps = 100000
     StepCount = 0
     Jacobian_Calc = getJacobian(env)
     Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)

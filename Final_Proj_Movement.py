@@ -9,8 +9,8 @@ import Final_Proj_Logic as FPL
 
 
 #define allowable tolerance to via point before continuing
-DIVIDE = 1
-ERROR = 0.02
+DIVIDE = 4
+ERROR = 0.075
 
 '''
 brings gripper to a close through velocity control
@@ -51,13 +51,13 @@ ARGS: env - Item[string] - Dist[float] - Ori[axis angles]
 def MoveY(env,Item,Dist,Ori):
     #Grabbing items body data and initializing function variables
     BodyMat = env.sim.data.get_body_xmat(Item)
-    BodyPos = env.sim.data.get_body_xpos(Item)
+    BodyPos = env.sim.data.get_body_xpos("robot0_base")
     MoveMat = np.zeros([4,4])
     CurrGoal = 0.0
     StepSize = Dist/DIVIDE
     #increment through via checkpoints until final destination is reached
     while CurrGoal <= Dist:
-        LiftPos = BodyPos + [0.0,CurrGoal,0.0]
+        LiftPos = BodyPos + [0.56,CurrGoal,0.31]
         MoveMat[:3,:3] = BodyMat
         MoveMat[:3,3] = LiftPos 
         LiftQuat = tfutil.mat2quat(MoveMat)
@@ -72,33 +72,33 @@ ARGS: env - Item[string] - Dist[float] - Ori[axis angles]
 def MoveZ(env,Item,Dist,Ori):
     #Grabbing items body data and initializing function variables
     BodyMat = env.sim.data.get_body_xmat(Item)
-    BodyPos = env.sim.data.get_body_xpos(Item)
+    BodyPos = env.sim.data.get_body_xpos("robot0_base")
     MoveMat = np.zeros([4,4])
     CurrGoal = 0.0
     StepSize = Dist/DIVIDE
     #increment through via checkpoints until final destination is reached
     while CurrGoal <= Dist:
-        LiftPos = BodyPos + [0.0,0.0,CurrGoal]
+        LiftPos = BodyPos + [0.56,0.0,CurrGoal-0.09]
         MoveMat[:3,:3] = BodyMat
         MoveMat[:3,3] = LiftPos 
         LiftQuat = tfutil.mat2quat(MoveMat)
         LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
         DesiredPose = (LiftPos,LiftQuat) 
+        print(CurrGoal)
+
         jointAngles = FPL.inverseKinematics(1,ERROR,DesiredPose_in_U=DesiredPose, env=env)
         CurrGoal += StepSize
 
 def Rotate(env,Item,Quat):
-    # LiftPos, LiftQuat = Turnright(env,ItemString)
-    # LiftQuat = [0.0,-0.707,-0.707,0.0]
     BodyMat = env.sim.data.get_body_xmat(Item)
     BodyPos = env.sim.data.get_body_xpos(Item)
-    MoveMat = np.zeros([4,4])
-    LiftPos = BodyPos + [0.,0.3,0.]
-    MoveMat[:3,:3] = BodyMat
-    MoveMat[:3,3] = LiftPos 
+    MoveMat = np.zeros([4, 4])
+    LiftPos = BodyPos + [0.0, 0.0, 0.0]
+    MoveMat[:3, :3] = BodyMat
+    MoveMat[:3, 3] = LiftPos 
         
-
-    DesiredPose = (LiftPos,Quat) 
-    jointAngles = FPL.inverseKinematics(1,.025,DesiredPose_in_U=DesiredPose, env=env)
+    
+    DesiredPose = (LiftPos, Quat) 
+    jointAngles = FPL.inverseKinematics(1, .025, DesiredPose_in_U=DesiredPose, env=env)
       
  
