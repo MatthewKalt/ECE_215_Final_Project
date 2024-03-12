@@ -12,72 +12,12 @@ import robosuite.utils.transform_utils as tfutil
 import Final_Proj_Logic as FPL
 import Final_Proj_Movement as FPM
 
-# def MoveUp(env, ItemString):
-#         BodyMat = env.sim.data.get_body_xmat(ItemString)
-#         BodyPos = env.sim.data.get_body_xpos(ItemString)
-#         MoveMat = np.zeros([4,4])
-#         LiftPos = BodyPos + [0.,.0,0.4]
-#         MoveMat[:3,:3] = BodyMat
-#         MoveMat[:3,3] = LiftPos 
-        
-#         return LiftPos, tfutil.mat2quat(MoveMat)
 
-      
-# def Moveright(env, ItemString):
-#         BodyMat = env.sim.data.get_body_xmat(def MoveUp(env, ItemString):
-#         BodyMat = env.sim.data.get_body_xmat(ItemString)
-#         BodyPos = env.sim.data.get_body_xpos(ItemString)
-#         MoveMat = np.zeros([4,4])
-#         LiftPos = BodyPos + [0.,.0,0.4]
-#         MoveMat[:3,:3] = BodyMat
-#         MoveMat[:3,3] = LiftPos 
-        
-#         return LiftPos, tfutil.mat2quat(MoveMat)
 
-      
-# def Moveright(env, ItemString):
-#         BodyMat = env.sim.data.get_body_xmat(ItemString)
-#         BodyPos = env.sim.data.get_body_xpos(ItemString)
-#         MoveMat = np.zeros([4,4])
-#         LiftPos = BodyPos + [0.,0.3,0.]
-#         MoveMat[:3,:3] = BodyMat
-#         MoveMat[:3,3] = LiftPos 
-        
-#         return LiftPos, tfutil.mat2quat(MoveMat)
-
-# def Turnright(env, ItemString):
-#         BodyMat = env.sim.data.get_body_xmat(ItemString)
-#         BodyPos = env.sim.data.get_body_xpos(ItemString)
-#         MoveMat = np.zeros([4,4])
-#         LiftPos = BodyPos + [0.,0.0,0.]
-#         MoveMat[:3,:3] = BodyMat
-#         MoveMat[:3,3] = LiftPos 
-        
-#         return LiftPos, tfutil.mat2quat(MoveMat)ItemString)
-#         BodyPos = env.sim.data.get_body_xpos(ItemString)
-#         MoveMat = np.zeros([4,4])
-#         LiftPos = BodyPos + [0.,0.3,0.]
-#         MoveMat[:3,:3] = BodyMat
-#         MoveMat[:3,3] = LiftPos 
-        
-#         return LiftPos, tfutil.mat2quat(MoveMat)
-
-# def Turnright(env, ItemString):
-#         BodyMat = env.sim.data.get_body_xmat(ItemString)
-#         BodyPos = env.sim.data.get_body_xpos(ItemString)
-#         MoveMat = np.zeros([4,4])
-#         LiftPos = BodyPos + [0.,0.0,0.]
-#         MoveMat[:3,:3] = BodyMat
-#         MoveMat[:3,3] = LiftPos 
-        
-#         return LiftPos, tfutil.mat2quat(MoveMat)
 
 def GoToItemDest(Item):
     BodyPos = env.sim.data.get_body_xpos(Item)
    
-
-
-     
       
 def GetObjects(env = any):
 
@@ -108,12 +48,10 @@ def GetObjects(env = any):
         # LiftPos, LiftQuat = Turnright(env,ItemString)
         LiftQuat = [0.0,-0.707,-0.707,0.0]
         FPM.Rotate(env, ItemString, LiftQuat)
-        # DesiredPose = (LiftPos,LiftQuat) 
-        # jointAngles = FPL.inverseKinematics(1,.025,DesiredPose_in_U=DesiredPose, env=env)
+        
       
  
      
-
 if __name__ == "__main__":
     
     gripper = 'PandaGripper'
