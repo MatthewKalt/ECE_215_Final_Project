@@ -1,0 +1,25 @@
+clc;
+clear;
+FormatSpec = '%f';
+
+ActualEefData = importdata('Data/ActualPos.txt');
+DesiredEefData = importdata('Data/DesiredPos.txt');
+
+ActualParsed = cell(numel(ActualEefData),1);
+DesiredParsed = cell(numel(DesiredEefData),1);
+
+for i=1:numel(ActualEefData)
+    val1 = sc
+%ActualEEFPose = fscanf(ActualEEF,FormatSpec,[3,Inf])
+% 
+% fileID1 = fopen('tocubecurrent.txt','r');
+% fileID2 = fopen('tocubedesired.txt','r');
+% formatSpec = '%f';
+% A = fscanf(fileID1,formatSpec)
+% numitems1 = length(A)/3
+% fclose(fileID1)
+% fileID1 = fopen('tocubecurrent.txt','r');
+% B = fscanf(fileID1,formatSpec,[3 Inf]);
+% C = fscanf(fileID2,formatSpec,[3 Inf]);
+
+

@@ -23,10 +23,10 @@ def GetObjects(env = any):
 
     action = [0,0,0,0,0,0,0,0]
     obs, reward, done, info = env.step(action)  # take action in the environment
-    ItemList = FPL.GetItemList(env,obs)
-
-    for key,value in ItemList.items():
-    #for i in range(1):
+   # ItemList = FPL.GetItemList(env,obs)
+    key = 'cube_main'
+    #for key,value in ItemList.items():
+    for i in range(1):
         ItemString = key
         #print(env.sim.data.get_body_xpos("robot0_base"))
         print(ItemString)
@@ -45,8 +45,8 @@ def GetObjects(env = any):
 
         FPM.MoveY(env,ItemString,0.3,DesiredOrientation)
 
-        # LiftPos, LiftQuat = Turnright(env,ItemString)
         LiftQuat = [0.0,-0.707,-0.707,0.0]
+
         FPM.Rotate(env, ItemString, LiftQuat)
         
       
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     # create environment with selected grippers
     env = suite.make(
-        "PickPlace",
+        "Lift",
         robots="Panda",
         gripper_types=gripper,
         

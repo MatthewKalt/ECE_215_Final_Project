@@ -39,7 +39,10 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
     Time = time.time()
     TimePrev=Time
     Iterm = 0
+    ActualPos = open('/home/matt/robosuite/robosuite/ECE_215_Final_Project/Data/ActualPos.txt','a') 
+    DesiredPos = open('/home/matt/robosuite/robosuite/ECE_215_Final_Project/Data/DesiredPos.txt','a') 
     while StepCount < NumSteps:
+
         Time =time.time()
         EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
         EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
@@ -100,6 +103,8 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
         StepCount += 1
         dThetaprev=dTheta
         TimePrev = Time
+        ActualPos.write(f"{EEF_Pos}\n")
+        DesiredPos.write(f"{Desired_Pos}\n")
 
   
     env.render()

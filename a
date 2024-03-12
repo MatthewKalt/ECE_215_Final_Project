@@ -1,0 +1,25 @@
+% Specify the file path
+file_path = 'Data/ActualPos.txt';
+
+% Read the file using importdata
+file_data = importdata(file_path);
+
+% Preallocate a cell array to store the parsed data
+parsed_data = cell(numel(file_data), 1);
+
+% Iterate through each line of the file
+for i = 1:numel(file_data)
+    % Extract the numeric values using regular expressions
+    line_data = sscanf(file_data{i}, '[%f,%f,%f]');
+    
+    % Reshape the extracted data into rows of three elements each
+    line_data = reshape(line_data, 3, [])';
+    
+    % Store the extracted numbers in the parsed_data cell array
+    parsed_data{i} = line_data;
+end
+
+% Convert the cell array to a numeric array
+parsed_data = cell2mat(parsed_data);
+
+% Now parsed_data contains the numeric values from the file, each row representing a line from the file.
