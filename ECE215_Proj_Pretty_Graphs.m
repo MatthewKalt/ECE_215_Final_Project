@@ -1998,8 +1998,21 @@ DesiredPos = [[0.0066 0.0053 0.8173],
 [0.0131 0.2286 1.1971]];
 
 
-
-plot3(ActualPos(:,1),ActualPos(:,2),ActualPos(:,3),LineStyle='--')
+k = linspace(1,979,979);
+k = k*.035;
+figure(1);
+plot(k,ActualPos(:,1))
 hold on
+plot(k,DesiredPos(:,1))
+plot(k,ActualPos(:,2))
+plot(k,DesiredPos(:,2))
+plot(k,ActualPos(:,3))
+plot(k,DesiredPos(:,3))
+legend('Actual_X','Desired_X','Actual_Y','Desired_Y','Actual_Z','Desired_Z');
+xlabel('Time [s]');
+ylabel('Position [M]');
+hold off
+figure(2);
+plot3(ActualPos(:,1),ActualPos(:,2),ActualPos(:,3),LineStyle='--')
 plot3(DesiredPos(:,1),DesiredPos(:,2),DesiredPos(:,3),LineStyle="-")
 hold off
