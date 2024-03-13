@@ -7,8 +7,8 @@ import time
 
 import Final_Proj_Movement as FPM
 
-K_P = 2
-K_I = 0.0001
+K_P = 2.2
+K_I = 0.0000000001
 K_D = 3
 
 def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
@@ -31,7 +31,7 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
     PoseErrorCumSum=np.zeros(6)
     dThetaprev=np.zeros(7)
 
-    NumSteps = 100000
+    NumSteps = 1000000
     StepCount = 0
     Jacobian_Calc = getJacobian(env)
     Jacobian_Inv = np.linalg.pinv(Jacobian_Calc)
@@ -42,6 +42,7 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
     ActualPos = open('/home/matt/robosuite/robosuite/ECE_215_Final_Project/Data/ActualPos.txt','a') 
     DesiredPos = open('/home/matt/robosuite/robosuite/ECE_215_Final_Project/Data/DesiredPos.txt','a') 
     while StepCount < NumSteps:
+        print(StepCount)
 
         Time =time.time()
         EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
@@ -68,12 +69,12 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
         dThetaCumSum += dTheta
 
        
-        boost=np.array([1,1,1,1,1,1,10,1])
+        boost=np.array([1,1,1,1,1,1,1,1])
         if RunNum >= 1:
             fname="toshelf"
-            K_P= 2
-            K_I=0.0001
-            K_D= 3
+            # K_P= 2
+            # K_I=0.0001
+            # K_D= 3
             Pterm=dTheta*K_P
             Iterm = Iterm + K_I*dTheta*(Time-TimePrev)
             Dterm=(dTheta-dThetaprev)*K_D/(Time-TimePrev)
@@ -86,9 +87,9 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
            
         else:
             fname="tocube"
-            K_P= 2
-            K_I= 0.0001
-            K_D= 3
+            # K_P= 2
+            # K_I= 0.0001
+            # K_D= 3
             Pterm=dTheta*K_P
             Iterm=dThetaCumSum*K_I
             Dterm=(dTheta-dThetaprev)*K_D/(Time-TimePrev)

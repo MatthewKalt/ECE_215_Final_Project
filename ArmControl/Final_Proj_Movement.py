@@ -9,8 +9,8 @@ import Final_Proj_Logic as FPL
 
 
 #define allowable tolerance to via point before continuing
-DIVIDE = 4
-ERROR = 0.075
+DIVIDE = 1
+ERROR = 0.03
 
 '''
 brings gripper to a close through velocity control
@@ -19,6 +19,12 @@ ARGS: env
 def CloseGripper(env):
     for j in range(20):
         action = [0,0,0,0,0,0,0,.020833] # sample random action
+        obs, reward, done, info = env.step(action)  # take action in the environment
+        env.render()  # render on display]
+
+def OpenGripper(env):
+    for j in range(20):
+        action = [0,0,0,0,0,0,0,-1] # sample random action
         obs, reward, done, info = env.step(action)  # take action in the environment
         env.render()  # render on display]
 
@@ -48,21 +54,27 @@ def MoveX(env,Item,Dist,Ori):
 Moves end effector through space in the Z direction
 ARGS: env - Item[string] - Dist[float] - Ori[axis angles]
 '''
-def MoveY(env,Item,Dist,Ori):
+def MoveXY(env,Item,Ori):
     #Grabbing items body data and initializing function variables
     BodyMat = env.sim.data.get_body_xmat(Item)
+
+    ItemPos = env.sim.data.get_body_xpos(Item)
     BodyPos = env.sim.data.get_body_xpos("robot0_base")
     MoveMat = np.zeros([4,4])
-    CurrGoal = 0.0
+    CurrGoal=0.0
+    Dist=ItemPos[1]
     StepSize = Dist/DIVIDE
     #increment through via checkpoints until final destination is reached
     while CurrGoal <= Dist:
-        LiftPos = BodyPos + [0.56,CurrGoal,0.31]
+        LiftPos = ItemPos + [0.0,0.0,0.2]#BodyPos + [0.56,CurrGoal,0.3]
         MoveMat[:3,:3] = BodyMat
         MoveMat[:3,3] = LiftPos 
         LiftQuat = tfutil.mat2quat(MoveMat)
         LiftQuat = tfutil.quat_multiply(tfutil.convert_quat(env.sim.data.get_body_xquat(Item)),tfutil.axisangle2quat(Ori))
         DesiredPose = (LiftPos,LiftQuat) 
+        
+        
+        
         jointAngles = FPL.inverseKinematics(1,ERROR,DesiredPose_in_U=DesiredPose, env=env)
         CurrGoal += StepSize
 '''
@@ -78,7 +90,7 @@ def MoveZ(env,Item,Dist,Ori):
     StepSize = Dist/DIVIDE
     #increment through via checkpoints until final destination is reached
     while CurrGoal <= Dist:
-        LiftPos = BodyPos + [0.56,0.0,CurrGoal-0.09]
+        LiftPos = BodyPos + [0.56,-0.1,CurrGoal]
         MoveMat[:3,:3] = BodyMat
         MoveMat[:3,3] = LiftPos 
         LiftQuat = tfutil.mat2quat(MoveMat)
