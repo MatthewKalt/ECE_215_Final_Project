@@ -8,7 +8,7 @@ import time
 import Final_Proj_Movement as FPM
 
 K_P = 2.2
-K_I = 0.0000000001
+K_I = 0.00000000001
 K_D = 3
 
 def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0., 0., 0., 1.])), env = []):
@@ -43,13 +43,14 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
     DesiredPos = open('/home/matt/robosuite/robosuite/ECE_215_Final_Project/Data/DesiredPos.txt','a') 
     while StepCount < NumSteps:
         print(StepCount)
+        
 
         Time =time.time()
         EEF_Pos = getGripperEEFPose(env,jointAngles)[0]
         EEF_Quat = getGripperEEFPose(env,jointAngles)[1]
      
         PoseError = CalcPoseError(Desired_Quat,Desired_Pos,EEF_Quat,EEF_Pos)
-        
+        print(PoseError)
         
         
         PoseErrorCumSum+=PoseError
@@ -67,9 +68,9 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
         dTheta = np.matmul(Jacobian_Inv,PoseError)
         dThetaCumSum = np.matmul(Jacobian_Inv, PoseErrorCumSum)
         dThetaCumSum += dTheta
-
+        
        
-        boost=np.array([1,1,1,1,1,1,1,1])
+        boost=np.array([1,1,1,1,1,1,10,1])
         if RunNum >= 1:
             fname="toshelf"
             # K_P= 2
@@ -81,6 +82,7 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
             NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,0.020833)
             NewdTheta = NewdTheta*boost
+            print(NewdTheta)
             action = NewdTheta
             
             obs, reward, done, info = env.step(action)  # take action in the environment
@@ -96,6 +98,7 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
             NewdTheta=Pterm+Iterm+Dterm
             NewdTheta = np.append(NewdTheta,-1)
             NewdTheta=NewdTheta*boost
+            print(NewdTheta)
             action = NewdTheta# sample random action
             obs, reward, done, info = env.step(action)  # take action in the environment
             
@@ -104,8 +107,8 @@ def inverseKinematics(RunNum,Sense,DesiredPose_in_U = (np.zeros(3,), np.array([0
         StepCount += 1
         dThetaprev=dTheta
         TimePrev = Time
-        ActualPos.write(f"{EEF_Pos}\n")
-        DesiredPos.write(f"{Desired_Pos}\n")
+        # ActualPos.write(f"{EEF_Pos}\n")
+        # DesiredPos.write(f"{Desired_Pos}\n")
 
   
     env.render()

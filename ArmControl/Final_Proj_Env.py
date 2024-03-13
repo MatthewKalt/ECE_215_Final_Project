@@ -20,6 +20,15 @@ import Final_Proj_Movement as FPM
       
 def GetObjects(env = any):
 
+
+    ActualPos = open('/home/matt/robosuite/robosuite/ECE_215_Final_Project/Data/ActualPos.txt','w') 
+    DesiredPos = open('/home/matt/robosuite/robosuite/ECE_215_Final_Project/Data/DesiredPos.txt','w') 
+    
+    ActualPos.write('')
+    DesiredPos.write('')
+    ActualPos.close()
+    DesiredPos.close()
+
     action = [0,0,0,0,0,0,0,0]
     obs, reward, done, info = env.step(action)  # take action in the environment
     ItemList = FPL.GetItemList(env,obs)
@@ -34,7 +43,7 @@ def GetObjects(env = any):
         ItemQuat = tfutil.convert_quat(env.sim.data.get_body_xquat(ItemString))
         ItemQuat = tfutil.quat_multiply(ItemQuat,tfutil.axisangle2quat([0.,np.pi,0.0]))# tfutil.axisangle2quat([0.,np.pi,0.0])) # reorienting for gripper to approach downward.
         DesiredPose = (env.sim.data.get_body_xpos(ItemString),ItemQuat) 
-        DesiredPoseSlightAbove=(env.sim.data.get_body_xpos(ItemString)+[0.0,0.0,0.05],ItemQuat) 
+        DesiredPoseSlightAbove=(env.sim.data.get_body_xpos(ItemString)+[0.0,0.0,0.15],ItemQuat) 
         
         jointAngles = FPL.inverseKinematics(0,.025,DesiredPose_in_U=DesiredPoseSlightAbove, env=env)
         print("Finish align_on_top")
@@ -83,7 +92,7 @@ if __name__ == "__main__":
         use_camera_obs=False,  # do not use pixel observations
 
         control_freq= 25 , # control should happen fast enough so that simulation looks smoother
-        horizon=5000,
+        horizon=10000,
         camera_names="frontview",
 
         
@@ -92,12 +101,15 @@ if __name__ == "__main__":
     
     while(True):
         # Reset the env
+        i = 0
         env.reset()
-        print(suite.models.objects)
-
+        #print(suite.models.objects)
+        env.render()
+        # if i ==0:
+        #     time.sleep(5)
         GetObjects(env)
         env.render()
-
+        i+= 1
         input('Hit Enter to test new pose')
     # env.close()
     
